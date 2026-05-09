@@ -717,7 +717,7 @@ export default function Home() {
               <span className="text-accent">together.</span>
             </h2>
             <p className="text-lg text-muted mb-12 max-w-md">
-              Open to internships, freelance projects, and interesting ideas.
+              Open to full time jobs, freelance projects, and interesting ideas.
               Drop a message or reach out on social media.
             </p>
 
