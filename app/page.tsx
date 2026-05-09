@@ -232,13 +232,31 @@ export default function Home() {
     e.preventDefault();
     setFormStatus("loading");
 
-    // Simulate form submission
-    setTimeout(() => {
-      setFormStatus("success");
-      // Reset form after 3 seconds
-      setTimeout(() => setFormStatus("idle"), 3000);
-      (e.target as HTMLFormElement).reset();
-    }, 1500);
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      message: formData.get("message"),
+    };
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setFormStatus("success");
+        (e.target as HTMLFormElement).reset();
+      } else {
+        setFormStatus("error");
+      }
+    } catch (err) {
+      setFormStatus("error");
+    } finally {
+      setTimeout(() => setFormStatus("idle"), 5000);
+    }
   };
 
   const projects = [
