@@ -281,7 +281,7 @@ export default function Home() {
       title: "AI Resume Scanner",
       desc: "Parses resumes against JDs, ranks candidates with AI match scores.",
       stack: "React · Node.js · Gemini API · MongoDB",
-      link: "https://github.com/sodhruv28/AI-Resume-Analyzer",
+      link: "https://github.com/sodhruv28/RESUME-scanning",
       external: "#",
     },
     {
