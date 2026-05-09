@@ -236,6 +236,7 @@ export default function Home() {
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
+      subject: formData.get("subject"),
       message: formData.get("message"),
     };
 
@@ -796,6 +797,7 @@ export default function Home() {
                     </label>
                     <input
                       id="name"
+                      name="name"
                       required
                       placeholder="Your Name"
                       className="w-full bg-background/50 border border-border-subtle rounded-xl px-5 py-4 text-foreground outline-none focus:border-accent transition-all placeholder:text-muted/30"
@@ -810,6 +812,7 @@ export default function Home() {
                     </label>
                     <input
                       id="email"
+                      name="email"
                       type="email"
                       required
                       placeholder="Your Email"
@@ -826,6 +829,7 @@ export default function Home() {
                   </label>
                   <input
                     id="subject"
+                    name="subject"
                     required
                     placeholder="Project Inquiry"
                     className="w-full bg-background/50 border border-border-subtle rounded-xl px-5 py-4 text-foreground outline-none focus:border-accent transition-all placeholder:text-muted/30"
@@ -840,6 +844,7 @@ export default function Home() {
                   </label>
                   <textarea
                     id="message"
+                    name="message"
                     required
                     rows={4}
                     placeholder="Let's talk about your project..."

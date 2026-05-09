@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
-    const { name, email, message } = await req.json();
+    const { name, email, subject, message } = await req.json();
 
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const { data, error } = await resend.emails.send({
       from: "Dhruv Portfolio <contact@sodhruv.me>",
       to: ["sodhruv28work@gmail.com"],
-      subject: `New Message from ${name}`,
+      subject: subject || `New Message from ${name}`,
       replyTo: email,
       text: `
         Name: ${name}
