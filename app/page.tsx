@@ -265,16 +265,16 @@ export default function Home() {
       title: "Atelier",
       desc: "AI outfit suggestions based on weather, occasion & cost-per-wear expense tracking.",
       stack: "Flutter · Gemini API · Supabase · Node.js",
-      link: "https://github.com/sodhruv28/Atelier-Flutter-App",
-      external: "#",
+      link: "https://github.com/sodhruv28/warddrob",
+      external: "https://warddrob.vercel.app",
     },
     {
       id: "02",
       title: "The Secret Diary Of US",
       desc: "A private digital sanctuary for couples to share memories, track moods, and preserve intimate moments securely with AI insights.",
       stack: "Flutter · Gemini API · MongoDB · Node.js",
-      link: "https://github.com/sodhruv28/Atelier-Flutter-App",
-      external: "https://www.thesecretdiaryofus.in/",
+      link: "https://github.com/sodhruv28/MINE",
+      external: "https://thesecretdiaryofus.in/",
     },
     {
       id: "03",
@@ -289,24 +289,24 @@ export default function Home() {
       title: "QR Restaurant System",
       desc: "QR-based ordering, live order tracking, admin dashboard and Stripe payments.",
       stack: "Next.js · Socket.IO · Stripe · MongoDB",
-      link: "https://github.com/sodhruv28/QR-Food-Ordering",
-      external: "#",
+      link: "https://github.com/sodhruv28/MENU-app",
+      external: "https://menu-app-sandy-seven.vercel.app",
     },
     {
       id: "05",
       title: "Chat & Video App",
       desc: "One-to-one chat with read receipts, typing indicators, and WebRTC video calling.",
       stack: "MERN · Socket.IO · WebRTC · Firebase",
-      link: "https://github.com/sodhruv28/MERN-Chat-App",
-      external: "#",
+      link: "https://github.com/sodhruv28/chatting",
+      external: "https://chattingvc.netlify.app",
     },
     {
       id: "06",
-      title: "Shikha",
+      title: "Siksha",
       desc: "Secure SaaS learning platform with course purchases and JWT authentication.",
       stack: "React · Node.js · Express · MongoDB Atlas",
-      link: "https://github.com/sodhruv28/Shikha-LMS",
-      external: "#",
+      link: "https://github.com/sodhruv28/shiksha-main",
+      external: "https://shikshaaa.netlify.app",
     },
   ];
 
@@ -498,24 +498,28 @@ export default function Home() {
 
         <div className="flex flex-col">
           {projects.map((project) => (
-            <a
+            <div
               key={project.id}
-              href={project.link}
-              target="_blank"
-              className="project-row group flex flex-col md:flex-row items-start md:items-center py-10 border-b border-border-subtle transition-all hover:bg-card-hover md:hover:px-8 md:-mx-8 relative cursor-pointer"
-              onMouseEnter={() => handleCursorHover(true)}
-              onMouseLeave={() => handleCursorHover(false)}
+              className="project-row group flex flex-col md:flex-row items-start md:items-center py-10 border-b border-border-subtle transition-all hover:bg-card-hover md:hover:px-8 md:-mx-8 relative"
             >
               <span className="text-[11px] text-muted mb-4 md:mb-0 md:w-20 font-mono">
                 {project.id}
               </span>
               <div className="flex-1 transition-transform md:group-hover:translate-x-[8px]">
-                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2 tracking-tight flex items-center gap-3">
-                  {project.title}
-                  <ExternalLink
-                    size={16}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-accent"
-                  />
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2 tracking-tight">
+                  <a
+                    href={project.external}
+                    target="_blank"
+                    className="hover:text-accent transition-colors flex items-center gap-3 w-fit"
+                    onMouseEnter={() => handleCursorHover(true)}
+                    onMouseLeave={() => handleCursorHover(false)}
+                  >
+                    {project.title}
+                    <ExternalLink
+                      size={16}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-accent"
+                    />
+                  </a>
                 </h3>
                 <p className="text-sm text-muted mb-4 max-w-xl">
                   {project.desc}
@@ -524,10 +528,18 @@ export default function Home() {
                   {project.stack}
                 </p>
               </div>
-              <div className="mt-6 md:mt-0 md:opacity-0 group-hover:opacity-100 transition-all text-accent font-bold flex items-center gap-2 text-sm">
-                View Project <ArrowRight size={16} />
+              <div className="mt-6 md:mt-0">
+                <a
+                  href={project.link}
+                  target="_blank"
+                  className="md:opacity-0 group-hover:opacity-100 transition-all text-accent font-bold flex items-center gap-2 text-sm hover:underline"
+                  onMouseEnter={() => handleCursorHover(true)}
+                  onMouseLeave={() => handleCursorHover(false)}
+                >
+                  View GitHub <ArrowRight size={16} />
+                </a>
               </div>
-            </a>
+            </div>
           ))}
         </div>
       </section>
