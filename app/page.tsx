@@ -66,6 +66,9 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
+  const statusResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -104,10 +107,10 @@ export default function Home() {
 
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    let rafId = requestAnimationFrame(raf);
 
     // Custom Cursor
     const moveCursor = (e: MouseEvent) => {
@@ -206,15 +209,21 @@ export default function Home() {
       }
 
       // Refresh ScrollTrigger after a short delay to ensure layout is ready
-      setTimeout(() => {
+      const refreshTimeoutId = setTimeout(() => {
         ScrollTrigger.refresh();
       }, 500);
+
+      return () => clearTimeout(refreshTimeoutId);
     }, containerRef);
 
     return () => {
       window.removeEventListener("mousemove", moveCursor);
+      cancelAnimationFrame(rafId);
       lenis.destroy();
       ctx.revert();
+      if (statusResetTimeoutRef.current) {
+        clearTimeout(statusResetTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -253,10 +262,16 @@ export default function Home() {
       } else {
         setFormStatus("error");
       }
-    } catch (err) {
+    } catch {
       setFormStatus("error");
     } finally {
-      setTimeout(() => setFormStatus("idle"), 5000);
+      if (statusResetTimeoutRef.current) {
+        clearTimeout(statusResetTimeoutRef.current);
+      }
+      statusResetTimeoutRef.current = setTimeout(() => {
+        setFormStatus("idle");
+        statusResetTimeoutRef.current = null;
+      }, 5000);
     }
   };
 
@@ -378,12 +393,14 @@ export default function Home() {
           <button
             onClick={toggleTheme}
             className="p-2 text-muted hover:text-foreground transition-colors"
+            aria-label="Toggle Theme"
           >
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           <button
             className="text-foreground p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -400,6 +417,7 @@ export default function Home() {
         <button
           className="absolute top-6 right-6 text-foreground p-2"
           onClick={() => setIsMenuOpen(false)}
+          aria-label="Close Menu"
         >
           <X size={32} />
         </button>
