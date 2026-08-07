@@ -1,10 +1,17 @@
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
+import { siteConfig } from "@/lib/site";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 3;
 const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_NAME = 100;
+const MAX_EMAIL = 254;
+const MAX_SUBJECT = 150;
+const MAX_MESSAGE = 5000;
 
 function escapeHtml(value: unknown) {
   return String(value ?? "")
@@ -13,6 +20,16 @@ function escapeHtml(value: unknown) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function sanitizeHeader(value: unknown) {
+  return String(value ?? "")
+    .replace(/[\r\n\u0000]+/g, " ")
+    .trim();
+}
+
+function asTrimmedString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function getClientIp(req: Request) {
@@ -36,36 +53,85 @@ function isRateLimited(ip: string) {
   return bucket.count > RATE_LIMIT_MAX_REQUESTS;
 }
 
+function pruneRateLimitBuckets() {
+  const now = Date.now();
+  for (const [ip, bucket] of rateLimitBuckets) {
+    if (bucket.resetAt <= now) {
+      rateLimitBuckets.delete(ip);
+    }
+  }
+}
+
 export async function POST(req: Request) {
   try {
+    if (!process.env.RESEND_API_KEY) {
+      return NextResponse.json(
+        { error: "Contact form is temporarily unavailable." },
+        { status: 503 },
+      );
+    }
+
+    pruneRateLimitBuckets();
+
     const ip = getClientIp(req);
     if (isRateLimited(ip)) {
       return NextResponse.json(
         { error: "Too many requests. Please try again shortly." },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
-    const { name, email, subject, message } = await req.json();
+    const body = await req.json();
+    const name = asTrimmedString(body.name);
+    const email = asTrimmedString(body.email);
+    const subject = asTrimmedString(body.subject);
+    const message = asTrimmedString(body.message);
+    const honeypot = asTrimmedString(body.company);
 
-    if (!name || !email || !message) {
+    // Bots often fill hidden fields; treat as success without sending.
+    if (honeypot) {
+      return NextResponse.json({ success: true });
+    }
+
+    if (!name || !email || !subject || !message) {
       return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
+        { error: "Please fill in all required fields." },
+        { status: 400 },
+      );
+    }
+
+    if (
+      name.length > MAX_NAME ||
+      email.length > MAX_EMAIL ||
+      subject.length > MAX_SUBJECT ||
+      message.length > MAX_MESSAGE
+    ) {
+      return NextResponse.json(
+        { error: "One or more fields are too long." },
+        { status: 400 },
+      );
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return NextResponse.json(
+        { error: "Please enter a valid email address." },
+        { status: 400 },
       );
     }
 
     const safeName = escapeHtml(name);
     const safeEmail = escapeHtml(email);
-    const safeSubject = escapeHtml(subject || "No Subject Provided");
+    const safeSubject = escapeHtml(subject);
     const safeMessage = escapeHtml(message);
+    const headerSubject = sanitizeHeader(subject) || `New Inquiry: ${name}`;
+    const textSubject = sanitizeHeader(subject) || "No Subject Provided";
 
     const { data, error } = await resend.emails.send({
-      from: "Dhruv Solanki <contact@sodhruv.me>",
-      to: ["sodhruv28work@gmail.com"],
-      subject: subject || `New Inquiry: ${safeName}`,
-      replyTo: String(email),
-      text: `From: ${name} (${email})\nSubject: ${subject || "No Subject Provided"}\n\n${message}`,
+      from: `${siteConfig.name} <contact@sodhruv.me>`,
+      to: [siteConfig.email],
+      subject: headerSubject,
+      replyTo: email,
+      text: `From: ${sanitizeHeader(name)} (${sanitizeHeader(email)})\nSubject: ${textSubject}\n\n${message}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
           <h2 style="color: #3b82f6; margin-top: 0;">New Portfolio Message</h2>
@@ -84,14 +150,17 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      return NextResponse.json({ error }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to send message. Please try again." },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ success: true, data });
   } catch {
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
